@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberRecon Web Suite v4.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #020c06; --bg2: #050f08; --card: #071210;
+            --border: #0f3020; --green: #00ff41; --green3: #003a10;
+            --red: #ff2020; --yellow: #ffcc00; --text: #b0ffcc;
+            --dim: #4a7a5a; --glow: 0 0 10px #00ff4140; --glow2: 0 0 20px #00ff4160;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Share Tech Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.015) 2px, rgba(0,255,65,0.015) 4px); pointer-events: none; z-index: 9999; }
+        #matrix { position: fixed; top: 0; left: 0; z-index: 0; opacity: 0.07; pointer-events: none; }
+        .container { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 20px; }
+        header { text-align: center; padding: 40px 20px 30px; border-bottom: 1px solid var(--border); }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--green); text-shadow: var(--glow2); letter-spacing: 4px; animation: flicker 4s infinite; }
+        @keyframes flicker { 0%,95%,100%{opacity:1} 96%{opacity:0.4} 97%{opacity:1} 98%{opacity:0.2} 99%{opacity:1} }
+        .version-badge { display: inline-block; background: var(--green3); color: var(--green); border: 1px solid var(--green); padding: 2px 10px; font-size: 0.75rem; border-radius: 3px; margin-left: 10px; box-shadow: var(--glow); vertical-align: middle; }
+        .tagline { color: var(--dim); font-size: 0.85rem; margin-top: 8px; letter-spacing: 2px; }
+        .status-bar { display: flex; justify-content: center; gap: 20px; margin-top: 15px; font-size: 0.75rem; color: var(--dim); flex-wrap: wrap; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: var(--green); border-radius: 50%; margin-right: 5px; box-shadow: var(--glow); animation: pulse 2s infinite; }
+        .status-dot.red { background: var(--red); box-shadow: 0 0 10px #ff202040; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+        .backend-status { margin-top: 10px; font-size: 0.8rem; padding: 6px 15px; border-radius: 4px; display: inline-block; }
+        .backend-online { color: var(--green); border: 1px solid var(--green); background: var(--green3); }
+        .backend-offline { color: var(--red); border: 1px solid var(--red); background: #1a0000; }
+        .tabs { display: flex; gap: 4px; margin: 25px 0 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .tab { padding: 8px 13px; background: transparent; color: var(--dim); border: 1px solid transparent; border-bottom: none; cursor: pointer; font-family: 'Share Tech Mono', monospace; font-size: 0.76rem; letter-spacing: 1px; transition: all 0.2s; white-space: nowrap; border-radius: 4px 4px 0 0; }
+        .tab:hover { color: var(--green); border-color: var(--border); }
+        .tab.active { color: var(--green); background: var(--card); border-color: var(--border); border-bottom-color: var(--card); box-shadow: var(--glow); }
+        .panel { display: none; background: var(--card); border: 1px solid var(--border); border-top: none; padding: 25px; border-radius: 0 0 6px 6px; }
+        .panel.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+        .panel-title { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: var(--green); margin-bottom: 20px; letter-spacing: 2px; }
+        .real-badge { font-size: 0.65rem; background: var(--green3); color: var(--green); border: 1px solid var(--green); padding: 2px 6px; border-radius: 3px; margin-left: 8px; vertical-align: middle; }
+        input, textarea, select { width: 100%; padding: 12px 15px; background: var(--bg2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Share Tech Mono', monospace; font-size: 0.9rem; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+        input:focus, textarea:focus { border-color: var(--green); box-shadow: var(--glow); }
+        input::placeholder, textarea::placeholder { color: var(--dim); }
+        textarea { resize: vertical; min-height: 90px; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        button { padding: 10px 20px; border: 1px solid var(--green); border-radius: 4px; background: var(--green3); color: var(--green); font-family: 'Share Tech Mono', monospace; font-size: 0.82rem; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+        button:hover { background: var(--green); color: var(--bg); box-shadow: var(--glow2); }
+        button.secondary { border-color: var(--dim); background: transparent; color: var(--dim); }
+        button.secondary:hover { border-color: var(--text); color: var(--text); background: transparent; box-shadow: none; }
+        .result-box { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 15px 15px 15px 15px; font-family: 'Share Tech Mono', monospace; font-size: 0.82rem; white-space: pre-wrap; min-height: 60px; position: relative; line-height: 1.8; display: none; word-break: break-all; }
+        .result-box.show { display: block; animation: fadeIn 0.3s ease; }
+        .copy-btn { position: absolute !important; top: 8px; right: 8px; padding: 4px 10px !important; font-size: 0.72rem !important; border-color: var(--dim) !important; background: var(--bg2) !important; color: var(--dim) !important; }
+        .copy-btn:hover { border-color: var(--green) !important; color: var(--green) !important; box-shadow: none !important; background: var(--bg2) !important; }
+        .loader { display: none; padding: 15px; color: var(--green); font-size: 0.85rem; }
+        .loader.show { display: block; }
+        .loader-text::after { content: ''; animation: dots 1.5s infinite; }
+        @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+        .ok{color:#00ff41} .warn{color:#ffcc00} .err{color:#ff2020} .info{color:#00ccff} .dim2{color:#4a7a5a}
+        .action-row { display: none; gap: 8px; margin-top: 10px; }
+        .action-row.show { display: flex; }
+        footer { text-align: center; padding: 25px; color: var(--dim); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 30px; }
+        footer span { color: var(--green); }
+        .cursor { display: inline-block; width: 7px; height: 13px; background: var(--green); animation: blink 1s infinite; vertical-align: middle; margin-left: 2px; }
+        @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+        .toast { position: fixed; bottom: 25px; right: 25px; background: var(--green3); border: 1px solid var(--green); color: var(--green); padding: 10px 18px; border-radius: 4px; font-size: 0.82rem; box-shadow: var(--glow2); z-index: 9998; display: none; }
+        @media(max-width:600px){ .logo{font-size:1.3rem} .tab{padding:6px 9px;font-size:0.68rem} }
+    </style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+<div class="container">
+    <header>
+        <div class="logo">CYBERRECON <span class="version-badge">v4.0</span></div>
+        <div class="tagline">[ BUG BOUNTY & CYBERSECURITY TOOLKIT — REAL DATA ]</div>
+        <div class="status-bar">
+            <span><span class="status-dot"></span>8 MODULES ACTIVE</span>
+            <span id="clock"></span>
+        </div>
+        <div id="backendStatus" class="backend-status backend-offline">⟳ CHECKING BACKEND...</div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('subdomain',this)">🔍 SUBDOMAIN</button>
+        <button class="tab" onclick="switchTab('fuzzer',this)">🗂️ DIR FUZZER</button>
+        <button class="tab" onclick="switchTab('headers',this)">🛡️ HEADERS</button>
+        <button class="tab" onclick="switchTab('iplookup',this)">🌐 IP LOOKUP</button>
+        <button class="tab" onclick="switchTab('whois',this)">📋 WHOIS</button>
+        <button class="tab" onclick="switchTab('ssl',this)">🔒 SSL CHECK</button>
+        <button class="tab" onclick="switchTab('ports',this)">🔌 PORT SCAN</button>
+        <button class="tab" onclick="switchTab('dns',this)">🌍 DNS LOOKUP</button>
+        <button class="tab" onclick="switchTab('hashurl',this)">🔐 HASH+URL</button>
+    </div>
+
+    <!-- SUBDOMAIN -->
+    <div id="subdomain" class="panel active">
+        <div class="panel-title">> SUBDOMAIN_SCANNER.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="domainInput" placeholder="Target domain (e.g. google.com)">
+        <div class="btn-row">
+            <button onclick="runTool('subdomain-scan','scanR','scanL','scanA',{domain:v('domainInput')})">▶ RUN SCAN</button>
+            <button class="secondary" onclick="clr('scanR','scanL','scanA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="scanL"><span class="loader-text">[ SCANNING SUBDOMAINS ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="scanR"><button class="secondary copy-btn" onclick="cp('scanR')">⎘ COPY</button></div>
+        <div class="action-row" id="scanA"><button class="secondary" onclick="ex('scanR','subdomain_scan')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- DIR FUZZER -->
+    <div id="fuzzer" class="panel">
+        <div class="panel-title">> DIR_FUZZER.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="urlInput" placeholder="Base URL (e.g. https://example.com)">
+        <textarea id="wordlist" placeholder="Paths one per line:&#10;/admin&#10;/login&#10;/dashboard&#10;/api&#10;/config&#10;/.env"></textarea>
+        <div class="btn-row">
+            <button onclick="runFuzz()">▶ START FUZZING</button>
+            <button class="secondary" onclick="clr('fuzzR','fuzzL','fuzzA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="fuzzL"><span class="loader-text">[ FUZZING DIRECTORIES ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="fuzzR"><button class="secondary copy-btn" onclick="cp('fuzzR')">⎘ COPY</button></div>
+        <div class="action-row" id="fuzzA"><button class="secondary" onclick="ex('fuzzR','dir_fuzz')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- HEADERS -->
+    <div id="headers" class="panel">
+        <div class="panel-title">> HEADER_ANALYZER.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="headerUrl" placeholder="Target URL (e.g. https://example.com)">
+        <div class="btn-row">
+            <button onclick="runTool('headers','headR','headL','headA',{url:v('headerUrl')})">▶ ANALYZE</button>
+            <button class="secondary" onclick="clr('headR','headL','headA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="headL"><span class="loader-text">[ ANALYZING HEADERS ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="headR"><button class="secondary copy-btn" onclick="cp('headR')">⎘ COPY</button></div>
+        <div class="action-row" id="headA"><button class="secondary" onclick="ex('headR','headers')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- IP LOOKUP -->
+    <div id="iplookup" class="panel">
+        <div class="panel-title">> IP_LOOKUP.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="ipInput" placeholder="IP Address (e.g. 8.8.8.8)">
+        <div class="btn-row">
+            <button onclick="runTool('ip-lookup','ipR','ipL','ipA',{ip:v('ipInput')})">▶ LOOKUP</button>
+            <button class="secondary" onclick="myIP()">◉ MY IP</button>
+            <button class="secondary" onclick="clr('ipR','ipL','ipA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="ipL"><span class="loader-text">[ FETCHING IP DATA ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="ipR"><button class="secondary copy-btn" onclick="cp('ipR')">⎘ COPY</button></div>
+        <div class="action-row" id="ipA"><button class="secondary" onclick="ex('ipR','ip_lookup')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- WHOIS -->
+    <div id="whois" class="panel">
+        <div class="panel-title">> WHOIS_LOOKUP.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="whoisInput" placeholder="Domain (e.g. example.com)">
+        <div class="btn-row">
+            <button onclick="runTool('whois','whoisR','whoisL','whoisA',{domain:v('whoisInput')})">▶ WHOIS LOOKUP</button>
+            <button class="secondary" onclick="clr('whoisR','whoisL','whoisA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="whoisL"><span class="loader-text">[ FETCHING WHOIS DATA ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="whoisR"><button class="secondary copy-btn" onclick="cp('whoisR')">⎘ COPY</button></div>
+        <div class="action-row" id="whoisA"><button class="secondary" onclick="ex('whoisR','whois')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- SSL -->
+    <div id="ssl" class="panel">
+        <div class="panel-title">> SSL_CHECKER.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="sslInput" placeholder="Domain (e.g. google.com)">
+        <div class="btn-row">
+            <button onclick="runTool('ssl-check','sslR','sslL','sslA',{domain:v('sslInput')})">▶ CHECK SSL</button>
+            <button class="secondary" onclick="clr('sslR','sslL','sslA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="sslL"><span class="loader-text">[ CHECKING SSL CERTIFICATE ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="sslR"><button class="secondary copy-btn" onclick="cp('sslR')">⎘ COPY</button></div>
+        <div class="action-row" id="sslA"><button class="secondary" onclick="ex('sslR','ssl_check')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- PORT SCAN -->
+    <div id="ports" class="panel">
+        <div class="panel-title">> PORT_SCANNER.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="portHost" placeholder="Host (e.g. example.com or 192.168.0.1)">
+        <input type="text" id="portList" placeholder="Ports comma separated (e.g. 80,443,22,21,3306,8080)">
+        <div class="btn-row">
+            <button onclick="runPortScan()">▶ SCAN PORTS</button>
+            <button onclick="quickScan()" class="secondary">⚡ QUICK SCAN</button>
+            <button class="secondary" onclick="clr('portR','portL','portA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="portL"><span class="loader-text">[ SCANNING PORTS ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="portR"><button class="secondary copy-btn" onclick="cp('portR')">⎘ COPY</button></div>
+        <div class="action-row" id="portA"><button class="secondary" onclick="ex('portR','port_scan')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- DNS -->
+    <div id="dns" class="panel">
+        <div class="panel-title">> DNS_LOOKUP.exe <span class="real-badge">⚡ REAL</span></div>
+        <input type="text" id="dnsInput" placeholder="Domain (e.g. google.com)">
+        <div class="btn-row">
+            <button onclick="runTool('dns-lookup','dnsR','dnsL','dnsA',{domain:v('dnsInput')})">▶ DNS LOOKUP</button>
+            <button class="secondary" onclick="clr('dnsR','dnsL','dnsA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="dnsL"><span class="loader-text">[ FETCHING DNS RECORDS ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="dnsR"><button class="secondary copy-btn" onclick="cp('dnsR')">⎘ COPY</button></div>
+        <div class="action-row" id="dnsA"><button class="secondary" onclick="ex('dnsR','dns_lookup')">↓ EXPORT</button></div>
+    </div>
+
+    <!-- HASH + URL TOOLS -->
+    <div id="hashurl" class="panel">
+        <div class="panel-title">> HASH_&_URL_TOOLS.exe</div>
+        <textarea id="toolInput" rows="3" placeholder="Enter text, URL, or hash..."></textarea>
+        <div class="btn-row">
+            <button onclick="genHash()">🔐 HASH</button>
+            <button onclick="urlEnc()">🔗 URL ENC</button>
+            <button onclick="urlDec()">🔗 URL DEC</button>
+            <button onclick="b64Enc()">📦 B64 ENC</button>
+            <button onclick="b64Dec()">📦 B64 DEC</button>
+            <button class="secondary" onclick="clr('toolR','toolL','toolA')">✕ CLEAR</button>
+        </div>
+        <div class="loader" id="toolL"><span class="loader-text">[ PROCESSING ]</span><span class="cursor"></span></div>
+        <div class="result-box" id="toolR"><button class="secondary copy-btn" onclick="cp('toolR')">⎘ COPY</button></div>
+        <div class="action-row" id="toolA"><button class="secondary" onclick="ex('toolR','tools')">↓ EXPORT</button></div>
+    </div>
+</div>
+
+<footer><p>© 2026 <span>CYBERRECON</span> v4.0 | Built by <span>Omiixx</span> | Backend: <span>Flask + Python</span> | Educational Use Only</p></footer>
+<div class="toast" id="toast"></div>
+
+<script>
+    const API = 'http://localhost:5000/api';
+
+    // CLOCK
+    function updateClock(){ document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US',{hour12:false}); }
+    setInterval(updateClock,1000); updateClock();
+
+    // MATRIX
+    const canvas=document.getElementById('matrix'),ctx=canvas.getContext('2d');
+    function rsz(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+    rsz(); window.addEventListener('resize',rsz);
+    let drops=Array(Math.floor(window.innerWidth/20)).fill(1);
+    setInterval(()=>{ ctx.fillStyle='rgba(2,12,6,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#00ff41'; ctx.font='14px Share Tech Mono'; drops.forEach((y,i)=>{ ctx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*20,y*20); if(y*20>canvas.height&&Math.random()>0.975)drops[i]=0; drops[i]++; }); },50);
+
+    // BACKEND CHECK
+    async function checkBackend(){
+        const el=document.getElementById('backendStatus');
+        try{
+            const r=await fetch(`${API}/ip-lookup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:'8.8.8.8'})});
+            if(r.ok){ el.className='backend-status backend-online'; el.textContent='✓ BACKEND ONLINE — localhost:5000'; }
+            else throw new Error();
+        }catch(e){ el.className='backend-status backend-offline'; el.textContent='✗ BACKEND OFFLINE — Run: python app.py'; }
+    }
+    checkBackend(); setInterval(checkBackend,10000);
+
+    // HELPERS
+    const v=id=>document.getElementById(id).value.trim();
+    function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+    function switchTab(id,el){ document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.getElementById(id).classList.add('active'); el.classList.add('active'); }
+
+    function showR(bid,html,aid){
+        const b=document.getElementById(bid), btn=b.querySelector('.copy-btn');
+        b.innerHTML=''; if(btn)b.appendChild(btn);
+        const d=document.createElement('div'); d.innerHTML=html; b.appendChild(d);
+        b.classList.add('show');
+        if(aid)document.getElementById(aid).classList.add('show');
+    }
+    function clr(bid,lid,aid){
+        const b=document.getElementById(bid), btn=b.querySelector('.copy-btn');
+        b.innerHTML=''; if(btn)b.appendChild(btn); b.classList.remove('show');
+        document.getElementById(lid).classList.remove('show');
+        if(aid)document.getElementById(aid).classList.remove('show');
+    }
+    function cp(bid){ navigator.clipboard.writeText(document.getElementById(bid).innerText.replace('⎘ COPY','').trim()).then(()=>showToast('✓ Copied!')); }
+    function ex(bid,fname){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([document.getElementById(bid).innerText.replace('⎘ COPY','').trim()],{type:'text/plain'})); a.download=`${fname}_${Date.now()}.txt`; a.click(); showToast('↓ Exported!'); }
+
+    function hdr(t){ return `<span class="ok">[ ${t} — ${new Date().toLocaleTimeString()} ]</span>\n<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`; }
+
+    // GENERIC TOOL RUNNER
+    async function runTool(endpoint, rid, lid, aid, body){
+        const vals=Object.values(body);
+        if(vals.some(v=>!v)){showToast('⚠ Fill in the field!');return;}
+        document.getElementById(lid).classList.add('show');
+        clr(rid,lid,aid); document.getElementById(lid).classList.add('show');
+        try{
+            const r=await fetch(`${API}/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            const j=await r.json();
+            document.getElementById(lid).classList.remove('show');
+            if(j.status==='success'){ showR(rid, formatData(endpoint,j.data,body), aid); }
+            else{ showR(rid, hdr('ERROR')+`<span class="err">[ ERROR ] ${j.message||'Unknown error'}</span>`, aid); }
+        }catch(e){
+            document.getElementById(lid).classList.remove('show');
+            showR(rid, hdr('ERROR')+`<span class="err">[ BACKEND OFFLINE ]\nRun: python app.py\nThen refresh this page.</span>`, aid);
+        }
+    }
+
+    // FORMAT DATA PER ENDPOINT
+    function formatData(ep, data, body){
+        let h=hdr(ep.toUpperCase().replace('-',' '));
+        if(ep==='subdomain-scan'){
+            h+=`<span class="info">TARGET   : ${data.domain}</span>\n`;
+            h+=`<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+            if(!data.subdomains||!data.subdomains.length){ h+=`<span class="warn">[ NO SUBDOMAINS FOUND ]</span>`; }
+            else{ data.subdomains.forEach(s=>{ h+=`<span class="ok">[+] ${s.subdomain} → ${s.ip}</span>\n`; }); h+=`\n<span class="ok">TOTAL FOUND: ${data.subdomains.length}</span>`; }
+        }
+        else if(ep==='headers'){
+            h+=`<span class="info">TARGET   : ${body.url}</span>\n`;
+            h+=`<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+            if(data.security_analysis){ Object.entries(data.security_analysis).forEach(([k,v])=>{ h+=v.present?`<span class="ok">[✓ PRESENT] ${k}</span>\n`:`<span class="err">[✗ MISSING] ${k}${v.critical?' ← CRITICAL':''}</span>\n`; }); }
+            if(data.all_headers){ h+=`\n<span class="ok">━━━━ ALL HEADERS ━━━━</span>\n`; Object.entries(data.all_headers).forEach(([k,v])=>{ h+=`<span class="info">${k}: ${v}</span>\n`; }); }
+        }
+        else if(ep==='ip-lookup'){
+            h+=`<span class="info">IP       : ${data.ip}</span>\n`;
+            h+=`<span class="info">HOSTNAME : ${data.hostname||'N/A'}</span>\n`;
+            h+=`<span class="info">CITY     : ${data.city||'N/A'}</span>\n`;
+            h+=`<span class="info">REGION   : ${data.region||'N/A'}</span>\n`;
+            h+=`<span class="info">COUNTRY  : ${data.country||'N/A'}</span>\n`;
+            h+=`<span class="info">LOCATION : ${data.latitude||'N/A'}, ${data.longitude||'N/A'}</span>\n`;
+            h+=`<span class="info">ORG/ISP  : ${data.org||'N/A'}</span>\n`;
+            h+=`<span class="info">POSTAL   : ${data.postal||'N/A'}</span>\n`;
+            h+=`<span class="info">TIMEZONE : ${data.timezone||'N/A'}</span>`;
+        }
+        else if(ep==='whois'){
+            h+=`<span class="info">DOMAIN     : ${data.domain||'N/A'}</span>\n`;
+            h+=`<span class="info">REGISTRAR  : ${Array.isArray(data.registrar)?data.registrar[0]:data.registrar||'N/A'}</span>\n`;
+            h+=`<span class="info">CREATED    : ${data.creation_date||'N/A'}</span>\n`;
+            h+=`<span class="info">EXPIRES    : ${data.expiration_date||'N/A'}</span>\n`;
+            h+=`<span class="info">STATUS     : ${Array.isArray(data.status)?data.status[0]:data.status||'N/A'}</span>\n`;
+            if(data.name_servers){ h+=`<span class="info">NAMESERVERS:</span>\n`; const ns=Array.isArray(data.name_servers)?data.name_servers:[data.name_servers]; ns.forEach(n=>{ h+=`<span class="ok">  → ${n}</span>\n`; }); }
+        }
+        else if(ep==='ssl-check'){
+            const valid=data.valid;
+            h+=`<span class="${valid?'ok':'err'}">SSL VALID  : ${valid?'✓ YES':'✗ NO'}</span>\n`;
+            h+=`<span class="info">SUBJECT    : ${data.subject||'N/A'}</span>\n`;
+            h+=`<span class="info">ISSUER     : ${data.issuer||'N/A'}</span>\n`;
+            h+=`<span class="info">EXPIRES    : ${data.expiry_date||'N/A'}</span>\n`;
+            const days=data.days_remaining;
+            const dc=days>30?'ok':days>7?'warn':'err';
+            h+=`<span class="${dc}">DAYS LEFT  : ${days||'N/A'} days</span>\n`;
+            h+=`<span class="info">CIPHER     : ${data.cipher||'N/A'}</span>`;
+        }
+        else if(ep==='port-scan'){
+            h+=`<span class="info">TARGET   : ${data.host}</span>\n`;
+            h+=`<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+            if(data.ports){ let open=0; data.ports.forEach(p=>{ if(p.status==='open'){ h+=`<span class="ok">[OPEN  ] Port ${p.port} — ${p.service||'unknown'}</span>\n`; open++; } else{ h+=`<span class="dim2">[CLOSED] Port ${p.port}</span>\n`; } }); h+=`\n<span class="ok">OPEN PORTS: ${open}/${data.ports.length}</span>`; }
+        }
+        else if(ep==='dns-lookup'){
+            h+=`<span class="info">TARGET   : ${data.domain}</span>\n`;
+            h+=`<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+            const types=['A','AAAA','MX','CNAME','TXT','NS','SOA'];
+            types.forEach(t=>{ if(data[t]&&data[t].length){ h+=`<span class="warn">[ ${t} RECORDS ]</span>\n`; data[t].forEach(r=>{ h+=`<span class="ok">  → ${typeof r==='object'?JSON.stringify(r):r}</span>\n`; }); } });
+        }
+        return h;
+    }
+
+    // DIR FUZZER
+    async function runFuzz(){
+        const url=v('urlInput'), wl=v('wordlist');
+        if(!url||!wl){showToast('⚠ Fill all fields!');return;}
+        const paths=wl.split('\n').filter(p=>p.trim());
+        document.getElementById('fuzzL').classList.add('show');
+        clr('fuzzR','fuzzL','fuzzA'); document.getElementById('fuzzL').classList.add('show');
+        try{
+            const r=await fetch(`${API}/dir-fuzz`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,paths})});
+            const j=await r.json();
+            document.getElementById('fuzzL').classList.remove('show');
+            if(j.status==='success'){
+                let h=hdr('DIR FUZZ');
+                h+=`<span class="info">TARGET   : ${url}</span>\n<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+                let ok=0,fb=0,nf=0;
+                j.data.results.forEach(r=>{
+                    if(r.status_code===200){h+=`<span class="ok">[200 OK      ] ${r.url}</span>\n`;ok++;}
+                    else if(r.status_code===403){h+=`<span class="warn">[403 FORBIDDEN] ${r.url}</span>\n`;fb++;}
+                    else if(r.status_code===301||r.status_code===302){h+=`<span class="info">[${r.status_code} REDIRECT] ${r.url}</span>\n`;}
+                    else{h+=`<span class="dim2">[404 NOT FOUND] ${r.url}</span>\n`;nf++;}
+                });
+                h+=`\n<span class="ok">200: ${ok} | 403: ${fb} | 404: ${nf}</span>`;
+                showR('fuzzR',h,'fuzzA');
+            }
+        }catch(e){ document.getElementById('fuzzL').classList.remove('show'); showR('fuzzR',hdr('ERROR')+`<span class="err">[ BACKEND OFFLINE ] Run: python app.py</span>`,'fuzzA'); }
+    }
+
+    // PORT SCAN
+    async function runPortScan(){
+        const host=v('portHost'), pl=v('portList');
+        if(!host||!pl){showToast('⚠ Fill all fields!');return;}
+        const ports=pl.split(',').map(p=>parseInt(p.trim())).filter(p=>!isNaN(p));
+        await runTool('port-scan','portR','portL','portA',{host,ports});
+    }
+    function quickScan(){ document.getElementById('portList').value='21,22,23,25,53,80,110,143,443,445,3306,3389,8080,8443'; }
+
+    // MY IP
+    async function myIP(){
+        document.getElementById('ipInput').value='';
+        document.getElementById('ipL').classList.add('show');
+        clr('ipR','ipL','ipA'); document.getElementById('ipL').classList.add('show');
+        try{
+            const r=await fetch('https://ipinfo.io/json');
+            const d=await r.json();
+            document.getElementById('ipL').classList.remove('show');
+            let h=hdr('MY IP INFO');
+            h+=`<span class="info">MY IP    : ${d.ip||'N/A'}</span>\n`;
+            h+=`<span class="info">CITY     : ${d.city||'N/A'}</span>\n`;
+            h+=`<span class="info">REGION   : ${d.region||'N/A'}</span>\n`;
+            h+=`<span class="info">COUNTRY  : ${d.country||'N/A'}</span>\n`;
+            h+=`<span class="info">ORG/ISP  : ${d.org||'N/A'}</span>\n`;
+            h+=`<span class="info">TIMEZONE : ${d.timezone||'N/A'}</span>`;
+            showR('ipR',h,'ipA');
+        }catch(e){ document.getElementById('ipL').classList.remove('show'); showToast('⚠ Could not fetch IP'); }
+    }
+
+    // HASH + URL TOOLS
+    async function genHash(){
+        const text=v('toolInput'); if(!text){showToast('⚠ Enter text!');return;}
+        async function hsh(a,t){ const b=await crypto.subtle.digest(a,new TextEncoder().encode(t)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
+        const [s1,s256,s384,s512]=await Promise.all([hsh('SHA-1',text),hsh('SHA-256',text),hsh('SHA-384',text),hsh('SHA-512',text)]);
+        let h=hdr('HASH GENERATOR');
+        h+=`<span class="info">INPUT    : ${text.slice(0,50)}${text.length>50?'...':''}</span>\n`;
+        h+=`<span class="ok">━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>\n`;
+        h+=`<span class="warn">SHA-1    : ${s1}</span>\n`;
+        h+=`<span class="ok">SHA-256  : ${s256}</span>\n`;
+        h+=`<span class="ok">SHA-384  : ${s384}</span>\n`;
+        h+=`<span class="ok">SHA-512  : ${s512}</span>`;
+        showR('toolR',h,'toolA');
+    }
+    function urlEnc(){ const t=v('toolInput'); if(!t)return; let h=hdr('URL ENCODE'); h+=`<span class="info">INPUT  : ${t}</span>\n<span class="ok">OUTPUT : ${encodeURIComponent(t)}</span>`; showR('toolR',h,'toolA'); }
+    function urlDec(){ const t=v('toolInput'); if(!t)return; try{ let h=hdr('URL DECODE'); h+=`<span class="info">INPUT  : ${t}</span>\n<span class="ok">OUTPUT : ${decodeURIComponent(t)}</span>`; showR('toolR',h,'toolA'); }catch(e){showToast('⚠ Invalid encoded string!');} }
+    function b64Enc(){ const t=v('toolInput'); if(!t)return; let h=hdr('BASE64 ENCODE'); h+=`<span class="info">INPUT  : ${t}</span>\n<span class="ok">OUTPUT : ${btoa(unescape(encodeURIComponent(t)))}</span>`; showR('toolR',h,'toolA'); }
+    function b64Dec(){ const t=v('toolInput'); if(!t)return; try{ let h=hdr('BASE64 DECODE'); h+=`<span class="info">INPUT  : ${t}</span>\n<span class="ok">OUTPUT : ${decodeURIComponent(escape(atob(t)))}</span>`; showR('toolR',h,'toolA'); }catch(e){showToast('⚠ Invalid Base64 string!');} }
+</script>
+</body>
+</html>
