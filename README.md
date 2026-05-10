@@ -1,111 +1,149 @@
-# CyberRecon Web Suite — Backend Setup Guide
+# 🔍 CyberRecon Web Suite v4.0
 
-## Quick Start (3 Steps)
+> Bug Bounty & Cybersecurity Toolkit — Real Data, Real Results
 
-### Step 1: Install Dependencies
-```bash
+Built by Omiixx | Parrot OS | Python + Flask + JavaScript
+
+---
+
+## 🚀 What is CyberRecon?
+
+CyberRecon is a browser-based cybersecurity 
+reconnaissance toolkit designed for:
+
+🕵️ Ethical Hackers
+🐛 Bug Bounty Hunters  
+🔐 Cybersecurity Enthusiasts
+🎓 Students learning Penetration Testing
+
+It combines a Python Flask backend with a 
+hacker-themed frontend to perform real 
+reconnaissance tasks.
+
+---
+
+## ⚡ Features — 8 Real Tools
+
+🔍 Subdomain Scanner
+→ Finds real subdomains using DNS resolution
+→ Shows IP of each subdomain found
+
+🗂️ Directory Fuzzer  
+→ Probes paths against target URL
+→ Shows 200 OK / 403 Forbidden / 404
+
+🛡️ Header Analyzer
+→ Checks all HTTP security headers
+→ Flags missing/critical headers
+→ Gives security grade A/B/C/F
+
+🌐 IP Lookup
+→ Real location, ISP, timezone
+→ Coordinates + Google Maps link
+→ Works on any IP address
+
+📋 WHOIS Lookup
+→ Domain registrar info
+→ Creation + expiry dates
+→ Nameservers
+
+🔒 SSL Certificate Checker
+→ Valid/Expired status
+→ Days remaining
+→ Issuer + Cipher suite
+
+🔌 Port Scanner
+→ Checks open/closed ports
+→ Shows service names (SSH, FTP, MySQL)
+→ Quick scan preset available
+
+🌍 DNS Lookup
+→ A, AAAA, MX, CNAME, TXT, NS, SOA records
+→ Complete DNS reconnaissance
+
+🔐 Hash + URL Tools
+→ SHA-1, SHA-256, SHA-384, SHA-512
+→ URL Encode/Decode
+→ Base64 Encode/Decode
+
+---
+
+## 🛠️ How to Run Locally
+
+### Requirements:
+- Python 3.x
+- Parrot OS / Kali Linux / Any Linux
+- Browser (Firefox recommended)
+
+### Step 1 — Clone Repository:
+git clone https://github.com/Omiixx-nova/cyberrecon-suite.git
+cd cyberrecon-suite
+
+### Step 2 — Create Virtual Environment:
+python3 -m venv ~/cyberrecon-env
+source ~/cyberrecon-env/bin/activate
+
+### Step 3 — Install Dependencies:
 pip install -r requirements.txt
-```
 
-### Step 2: Run the Server
-```bash
+### Step 4 — Start Backend:
 python app.py
-```
 
-Server starts at: **http://localhost:5000**
-
-### Step 3: Connect Your Frontend
-Your HTML/JS frontend can now call the API using fetch():
-
-```javascript
-const response = await fetch("http://localhost:5000/api/dns-lookup", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ domain: "example.com" })
-});
-const result = await response.json();
-console.log(result.data);
-```
+### Step 5 — Open Frontend:
+Open index.html in your browser
+Backend status will show ONLINE at top
 
 ---
 
-## API Endpoints Reference
+## 📁 Project Structure
 
-| Endpoint              | Method | Input Fields                        |
-|-----------------------|--------|-------------------------------------|
-| `/api/subdomain-scan` | POST   | `domain`                            |
-| `/api/dir-fuzz`       | POST   | `url`, `paths` (array)              |
-| `/api/headers`        | POST   | `url`                               |
-| `/api/ip-lookup`      | POST   | `ip`                                |
-| `/api/whois`          | POST   | `domain`                            |
-| `/api/ssl-check`      | POST   | `domain`                            |
-| `/api/port-scan`      | POST   | `host`, `ports` (array of numbers)  |
-| `/api/dns-lookup`     | POST   | `domain`                            |
-| `/api/health`         | GET    | *(none)*                            |
+cyberrecon-suite/
+├── index.html         → Frontend (browser UI)
+├── app.py             → Flask backend (8 endpoints)
+├── requirements.txt   → Python dependencies
+└── README.md          → This file
 
 ---
 
-## All Response Format
+## 🔌 API Endpoints
 
-Every endpoint returns:
-```json
-{
-  "status": "success",
-  "data": { ... }
-}
-```
-
-On error:
-```json
-{
-  "status": "error",
-  "message": "Description of what went wrong"
-}
-```
+POST /api/subdomain-scan  → { "domain": "example.com" }
+POST /api/dir-fuzz        → { "url": "...", "paths": [...] }
+POST /api/headers         → { "url": "https://example.com" }
+POST /api/ip-lookup       → { "ip": "8.8.8.8" }
+POST /api/whois           → { "domain": "example.com" }
+POST /api/ssl-check       → { "domain": "example.com" }
+POST /api/port-scan       → { "host": "...", "ports": [...] }
+POST /api/dns-lookup      → { "domain": "example.com" }
 
 ---
 
-## Frontend fetch() Examples
+## ⚠️ Disclaimer
 
-### DNS Lookup
-```javascript
-fetch("http://localhost:5000/api/dns-lookup", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ domain: "google.com" })
-})
-.then(r => r.json())
-.then(data => console.log(data));
-```
-
-### Port Scan
-```javascript
-fetch("http://localhost:5000/api/port-scan", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ host: "example.com", ports: [80, 443, 22, 21, 3306] })
-})
-.then(r => r.json())
-.then(data => console.log(data));
-```
-
-### SSL Check
-```javascript
-fetch("http://localhost:5000/api/ssl-check", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ domain: "github.com" })
-})
-.then(r => r.json())
-.then(data => console.log(data));
-```
+This tool is for EDUCATIONAL purposes only.
+Only test on domains/IPs you OWN or have 
+PERMISSION to test.
+Unauthorized scanning is ILLEGAL.
+The developer is not responsible for misuse.
 
 ---
 
-## Notes
-- CORS is enabled — your frontend on any port can connect freely
-- All endpoints have error handling built in
-- Port scanner uses multi-threading (fast!)
-- Subdomain scanner checks 50+ common subdomains in parallel
-- SSL check works on port 443 only (standard HTTPS)
-- IP Lookup uses ipinfo.io free tier (no API key needed)
+## 👤 Author
+
+Omiixx
+GitHub  → https://github.com/Omiixx-nova
+Focus   → Cybersecurity | Bug Bounty | Ethical Hacking
+OS      → Parrot OS
+
+---
+
+## 📅 Version History
+
+v1.0 → Basic demo tools
+v2.0 → Matrix UI + Dark theme + Tabs
+v3.0 → Hash generator + URL tools + IP lookup
+v4.0 → Real Flask backend + 8 live endpoints
+
+---
+
+⭐ Star this repo if you found it useful!
